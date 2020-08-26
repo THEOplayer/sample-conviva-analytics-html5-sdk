@@ -560,7 +560,6 @@ class NewConvivaIntegration {
             return;
         }
         this._convivaAdAnalytics = Conviva.Analytics.buildAdAnalytics(this._convivaVideoAnalytics);
-        log('Conviva.Analytics', `buildAdAnalytics(${this._convivaVideoAnalytics})`);
         this._player.ads.addEventListener('aderror', this._onAdsError);
         this._player.ads.addEventListener('adbreakbegin', this._onAdBreakBegin);
         this._player.ads.addEventListener('adbreakend', this._onAdBreakEnd);
