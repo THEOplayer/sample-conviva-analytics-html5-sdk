@@ -17,7 +17,7 @@ Conviva is an analytics service. THEOplayer offers a integration plugin for this
 
 | Web SDK | Android SDK | iOS SDK | tvOS SDK| Android TV SDK | Chromecast SDK | Tizen | WebOS |
 | :-----: | :---------: | :-----: | :--: | :------------: | :------------: | :----: | :----: |
-|   Yes   |     No     |   No   | No  |      Yes       |      Unverified       |  Unverified | Unverified |
+|   Yes   |     No     |   No   | No  |      Yes       |      Unverified       |  Yes | Yes |
 
 ## Code example
 
@@ -27,15 +27,13 @@ Conviva is an analytics service. THEOplayer offers a integration plugin for this
 
 1. Have a THEOplayer SDK.
 2. Setup the [Basic Getting Started with THEOplayer](https://docs.portal.theoplayer.com/getting-started/01-sdks/01-web/00-getting-started.md) 
-2. Include Conviva's SDK. For example,
+3. Include Conviva's SDK. For example,
 ```html
 //Recommended Conviva Library
-<script type='text/javascript' src='//cdn.theoplayer.com/conviva/conviva-4.0.14.js'></script>
+<script type='text/javascript' src='//cdn.theoplayer.com/conviva/conviva-4.0.15.js'></script>
 
-//THEOplayer Integrated Module with Conviva 
-<script type='text/javascript' src='//cdn.theoplayer.com/conviva/conviva_theoplayer_plugin.js'></script>
 ```
-Note: You can also Clone the repo to have the local version of Plugin and include the file in the `script` tag.
+Note: You can also Clone the repo to have the local version of Plugin and include the file in the `script` tag. For debugging and development purposes, we have a debug version as well which can be used by replacing the URL with `conviva_theoplayer_metadata_plugin_debug.js`
 
 ### Configuration
 
@@ -55,10 +53,41 @@ The snippets below explain how you can pass on Conviva settings to a THEOplayer 
         convivaConfigs[Conviva.Constants.CUSTOMER_KEY] = TEST_CUSTOMER_KEY;
 ```
 
-2. Initialise THEOplayer-conviva plugin with the parameters including any metatdata for that particular asset.
+2. - Initialise THEOplayer-conviva plugin with the parameters including any manual metatdata for that particular asset.
 
 ```js
+//Include the Script - THEOplayer Integrated Module with Conviva (Without Content Metadata function)
+<script type='text/javascript' src='//cdn.theoplayer.com/conviva/conviva_theoplayer_plugin.js'></script>
+
 //Prepare the metadata Content Info
+var contentInfo = {};
+contentInfo[Conviva.Constants.ASSET_NAME] = assetName;
+contentInfo[Conviva.Constants.STREAM_URL] = url;
+contentInfo[Conviva.Constants.IS_LIVE] = Conviva.Constants.StreamType.LIVE; // Or Conviva.Constants.StreamType.VOD
+contentInfo[Conviva.Constants.PLAYER_NAME] = playerName;
+contentInfo[Conviva.Constants.VIEWER_ID] = viewerId;
+contentInfo[Conviva.Constants.DURATION] = duration;
+contentInfo[Conviva.Constants.ENCODED_FRAMERATE] = encodedFps;
+contentInfo[Conviva.Constants.DEFAULT_RESOURCE] = defaultResource;
+contentInfo[ANY_TAG_KEY1] = "VALUE1";
+contentInfo[ANY_TAG_KEY2] = "VALUE2";
+
+//Initialise the THEOplayer Conviva Plugin with the defined Content Info 
+var integration = new NewConvivaIntegration(player,convivaConfigs,contentInfo);
+
+```
+
+* Note: `player` in the `NewConvivaIntegration` is THEOplayer Object initialised on the web page. `convivaConfigs` are the details of the conviva and `contentMetadata` is the last parameter to add manually metadata associated to that content. All the params added to `contentInfo` should be a string.
+
+
+ 2. - Initialise THEOplayer-conviva-metadata plugin with metatdata for that source asset.
+
+```js
+//Include the Script - THEOplayer Integrated Module with Conviva (With Content Metadata function)
+<script type='text/javascript' src='//cdn.theoplayer.com/conviva/conviva_theoplayer_metadata_plugin.js'></script>
+
+//Prepare a function which creates metadata ContentInfo when the source of the player is changed
+function contentMetadataReceiver(){
 var contentInfo = {};
 contentInfo[Conviva.Constants.ASSET_NAME] = assetName;
 contentInfo[Conviva.Constants.STREAM_URL] = url;
@@ -70,13 +99,14 @@ contentInfo[Conviva.Constants.ENCODED_FRAMERATE] = encodedFps;
 contentInfo[Conviva.Constants.DEFAULT_RESOURCE] = defaultResource;
 contentInfo[ANY_TAG_KEY1] = "VALUE1";
 contentInfo[ANY_TAG_KEY2] = "VALUE2";
+return contentInfo;
+}
 
 //Initialise the THEOplayer Conviva Plugin with the defined Content Info 
-var integration = new NewConvivaIntegration(player,convivaConfigs,{ [Conviva.Constants.IS_LIVE]: Conviva.Constants.StreamType.VOD, contentInfo);
+var integration = new NewConvivaIntegration(player,convivaConfigs,contentMetadataReceiver);
 
 ```
-
-Note: `player` in the `NewConvivaIntegration` is THEOplayer Object initialised on the web page. 
+* Note: `contentMetadataReceiver` is `(source) => contentMetadata`, also it might be needed to `bind(this)` the function. This function is automatically called again when the source of the player is changed. 
 
 ## Related links:
 
