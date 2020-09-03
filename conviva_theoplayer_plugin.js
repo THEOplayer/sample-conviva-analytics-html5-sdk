@@ -484,8 +484,7 @@ class NewConvivaIntegration {
             this._player.removeEventListener('playing', this._onAdsPlayerPlaying);
             this._player.removeEventListener('pause', this._onAdsPlayerPause);
             if (!this._convivaAdAnalytics) {
-                this._convivaAdAnalytics = Conviva.Analytics.buildAdAnalytics(convivaVideoAnalytics);
-
+                this._convivaAdAnalytics = Conviva.Analytics.buildAdAnalytics(this._convivaVideoAnalytics);
             }
             if (this._convivaAdAnalytics) {
                 this._convivaAdAnalytics.reportAdFailed(event.message || 'Ad Request Failed');
