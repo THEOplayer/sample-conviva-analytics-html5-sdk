@@ -466,11 +466,11 @@ class NewConvivaIntegration {
                 log('AdAnalytics', `reportAdEnded()`);
             }
             if (this.contentPlaybackEnded && this._convivaVideoAnalytics) {
-                convivaVideoAnalytics.reportPlaybackEnded();
+                this._convivaVideoAnalytics.reportPlaybackEnded();
                 log('VideoAnalytics', `reportPlaybackEnded()`);
-                convivaVideoAnalytics.release();
+                this._convivaVideoAnalytics.release();
                 log('VideoAnalytics', `elease()`);
-                convivaVideoAnalytics = undefined;
+                this._convivaVideoAnalytics = undefined;
                 Conviva.Analytics.release();
                 log('Conviva.Analytics', `release()`);
             }

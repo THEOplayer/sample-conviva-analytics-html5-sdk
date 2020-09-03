@@ -470,9 +470,9 @@ class NewConvivaIntegration {
 
             }
             if (this.contentPlaybackEnded && this._convivaVideoAnalytics) {
-                convivaVideoAnalytics.reportPlaybackEnded();
-                convivaVideoAnalytics.release();
-                convivaVideoAnalytics = undefined;
+                this._convivaVideoAnalytics.reportPlaybackEnded();
+                this._convivaVideoAnalytics.release();
+                this._convivaVideoAnalytics = undefined;
                 Conviva.Analytics.release();
 
             }
