@@ -116,13 +116,38 @@ function collectContentMetdata(player, configuredContentMetadata) {
     }, configuredContentMetadata);
 }
 
-function collectAdMetadata(ad) {
+function updateCollectedContentMetdata(configuredContentMetadata) {
+    return Object.assign(configuredContentMetadata);
+}
+
+function collectAdMetadata(player,ad) {
+    let CurrentAdBreak = player.ads.currentAdBreak || {};
+    let CurrentAdBreakTimeOffset = CurrentAdBreak.timeOffset;
+    let CurrentAdBreakPosition;
+    if (CurrentAdBreakTimeOffset === 0) {
+    CurrentAdBreakPosition = Conviva.Constants.AdPosition.PREROLL;
+    } else if (CurrentAdBreakTimeOffset < 0) {
+    CurrentAdBreakPosition = Conviva.Constants.AdPosition.POSTROLL;
+    } else {
+    CurrentAdBreakPosition = Conviva.Constants.AdPosition.MIDROLL;
+    }
     return {
-        [Conviva.Constants.ASSET_NAME]: ad.title || ad.id,
+        [Conviva.Constants.ASSET_NAME]: ad.title,
         [Conviva.Constants.STREAM_URL]: ad.mediaUrl || ad.resourceURI,
         [Conviva.Constants.PLAYER_NAME]: 'THEOplayer',
         [Conviva.Constants.DURATION]: ad.duration,
-        [Conviva.Constants.IS_LIVE]: Conviva.Constants.StreamType.VOD
+        [Conviva.Constants.IS_LIVE]: Conviva.Constants.StreamType.VOD,
+        ["c3.ad.technology"]: Conviva.Constants.AdType.CLIENT_SIDE,
+        ["c3.ad.id"]: ad.id,
+        ["c3.ad.system"]: ad.adSystem,
+        ["c3.ad.position"]: CurrentAdBreakPosition,
+        ["c3.ad.isSlate"]: "false",
+        ["c3.ad.mediaFileApiFramework"]: "NA",
+        ["c3.ad.adStitcher"]: "NA",
+        ["c3.ad.firstAdSystem"]: ad.wrapperAdSystems[0],
+        ["c3.ad.firstAdId"]: ad.wrapperAdIds[0],
+        ["c3.ad.firstCreativeId"]: ad.wrapperCreativeIds[0],
+        ["c3.ad.creativeId"]: ad.creativeId
     };
 }
 
@@ -267,7 +292,6 @@ class NewConvivaIntegration {
             }
             if (!this._convivaVideoAnalytics) {
                 this._convivaVideoAnalytics = Conviva.Analytics.buildVideoAnalytics();
-                log('Conviva.Analytics', `buildVideoAnalytics()`);
             }
             this._convivaVideoAnalytics.reportPlaybackError('A Video Playback Failure has occurred: Waiting for the manifest to come back online', Conviva.Constants.ErrorSeverity.FATAL);
         };
@@ -275,6 +299,7 @@ class NewConvivaIntegration {
             if (!this._player) {
                 return;
             }
+
             if (!this._isPlayingAd && this._convivaVideoAnalytics && this._currentSource !== this._player.source) {
                 if (this._convivaAdAnalytics) {
                     this._convivaAdAnalytics.release();
@@ -305,15 +330,11 @@ class NewConvivaIntegration {
             }
             if (!this._isPlayingAd && this._convivaVideoAnalytics) {
                 this._convivaVideoAnalytics.reportPlaybackMetric(Conviva.Constants.Playback.PLAYER_STATE, Conviva.Constants.PlayerState.STOPPED);
-
                 if (this._allAdsCompleted) {
                     this._convivaVideoAnalytics.reportPlaybackEnded();
-
                     this._convivaVideoAnalytics.release();
-
                     this._convivaVideoAnalytics = undefined;
                     Conviva.Analytics.release();
-
                 }
             }
             this._contentPlaybackEnded = true;
@@ -369,7 +390,9 @@ class NewConvivaIntegration {
                         [Conviva.Constants.POD_DURATION]: currentAdBreak.maxDuration,
                         [Conviva.Constants.POD_INDEX]: currentAdBreakIndex
                     };
+                    console.log(this._convivaAdAnalytics, ' ad analytics')
                     this._convivaVideoAnalytics.reportAdBreakStarted(Conviva.Constants.AdType.CLIENT_SIDE, Conviva.Constants.AdPlayer.CONTENT, convivaAdBreakInfo);
+                    console.log(Conviva.Constants.AdType.CLIENT_SIDE, Conviva.Constants.AdPlayer.CONTENT, convivaAdBreakInfo)
                     this._adBreakStartSent = true;
                 } else {
                     this._convivaVideoAnalytics.reportPlayerInFocus(false);
@@ -388,7 +411,7 @@ class NewConvivaIntegration {
                     }
                 } else {
                     if (!this._isPlayingPostRoll) {
-                        this._convivaVideoAnalytics.reportPlayerInFocus(true);
+                  this._convivaVideoAnalytics.reportPlayerInFocus(true);
 
                     }
                 }
@@ -398,7 +421,7 @@ class NewConvivaIntegration {
                     this._convivaVideoAnalytics = undefined;
                     Conviva.Analytics.release();
                     this._contentPlaybackEnded = true;
-                    this._allAdsCompleted = true;
+                    this._allAdsCompleted = true; // TOM: I assume that this is logged after the porstrol is over
                 }
             }
             const scheduledAdBreaks = this._player.ads.scheduledAdBreaks;
@@ -413,7 +436,7 @@ class NewConvivaIntegration {
             if (!this._player) {
                 return;
             }
-            this._adStartSent = false;
+            this._adStartSent = false; 
             this._player.addEventListener('playing', this._onAdsPlayerPlaying);
             this._player.addEventListener('pause', this._onAdsPlayerPause);
         };
@@ -430,12 +453,11 @@ class NewConvivaIntegration {
 
                     }
                 } else {
-                    if (!this._convivaAdAnalytics) {
+                    if (!this._convivaAdAnalytics && this._convivaVideoAnalytics) {
                         this._convivaAdAnalytics = Conviva.Analytics.buildAdAnalytics(this._convivaVideoAnalytics);
-
                     }
                     if (this._convivaAdAnalytics) {
-                        const adMetadata = collectAdMetadata(currentLinearAd);
+                        const adMetadata = collectAdMetadata(this._player,currentLinearAd);
                         this._convivaAdAnalytics.setAdInfo(adMetadata);
                         this._convivaAdAnalytics.reportAdLoaded();
                         this._convivaAdAnalytics.reportAdStarted();
@@ -463,7 +485,7 @@ class NewConvivaIntegration {
             }
             const currentLinearAd = findCurrentLinearAd(this._player.ads.currentAds);
             if (currentLinearAd) {
-                return; // it's not the linear ad which ended
+                return; 
             }
             if (this._convivaAdAnalytics) {
                 this._convivaAdAnalytics.reportAdEnded();
@@ -485,14 +507,16 @@ class NewConvivaIntegration {
             }
             this._player.removeEventListener('playing', this._onAdsPlayerPlaying);
             this._player.removeEventListener('pause', this._onAdsPlayerPause);
-            if (!this._convivaAdAnalytics) {
+            if (!this._convivaAdAnalytics && this._convivaVideoAnalytics) {
                 this._convivaAdAnalytics = Conviva.Analytics.buildAdAnalytics(this._convivaVideoAnalytics);
 
             }
             if (this._convivaAdAnalytics) {
-                this._convivaAdAnalytics.reportAdFailed(event.message || 'Ad Request Failed');
+                const adErrorInfo = 'code:'+ event.errorCode + ': message:' + event.message;
+                this._convivaAdAnalytics.reportAdFailed(adErrorInfo || 'Ad Request Failed');
                 this._convivaAdAnalytics.release();
                 this._convivaAdAnalytics = undefined;
+                console.log('Error reported with message: ', adErrorInfo);
             }
         };
         this._player = player;
@@ -509,7 +533,7 @@ class NewConvivaIntegration {
             this._convivaVideoAnalytics = Conviva.Analytics.buildVideoAnalytics();
             this._convivaVideoAnalytics.setPlayerInfo(collectPlayerInfo());
             this._convivaVideoAnalytics.setCallback(() => {
-                if (this._convivaVideoAnalytics) {
+                if (this._convivaVideoAnalytics) { 
                     if (this._player) {
                         this._convivaVideoAnalytics.reportPlaybackMetric(Conviva.Constants.Playback.PLAY_HEAD_TIME, this._player.currentTime * 1000);
                         this._convivaVideoAnalytics.reportPlaybackMetric(Conviva.Constants.Playback.BUFFER_LENGTH, calculateBufferLength(this._player));
@@ -555,7 +579,7 @@ class NewConvivaIntegration {
         this._player.addEventListener('ended', this._onPlayerEnded);
         this._player.addEventListener('loadstart', this._onPlayerWaiting);
         this._player.addEventListener('segmentnotfound', this._onSegmentNotFound);
-        this._player.addEventListener('destroy', this._onPlayerDestroyed);
+        this._player.addEventListener('destroy', this._onPlayerDestroyed); 
         this._player.addEventListener('sourcechange', this._onSourceChange);
 
         if (this._player.network) {
@@ -599,7 +623,7 @@ class NewConvivaIntegration {
             if (this._player.network) {
                 this._player.network.removeEventListener('offline', this._reportManifestOffline);
             }
-        } catch (ignore) {}
+        } catch (ignore) { }
 
         if (this._player.ads) {
             this._player.ads.removeEventListener('aderror', this._onAdsError);
@@ -613,17 +637,24 @@ class NewConvivaIntegration {
 
         if (this._convivaAdAnalytics) {
             this._convivaAdAnalytics.release();
-
         }
         if (this._convivaVideoAnalytics) {
             this._convivaVideoAnalytics.release();
-
         }
         Conviva.Analytics.release();
-
         this._player = undefined;
         this._convivaVideoAnalytics = undefined;
         this._convivaAdAnalytics = undefined;
         this._currentAdBreak = undefined;
+    }
+    updateContentMetdata(contentInfo){
+        if (!this._player) {
+            return;
+        }
+        if (!this._isPlayingAd && this._convivaVideoAnalytics) {
+                this._convivaVideoAnalytics.setContentInfo(updateCollectedContentMetdata(contentInfo));
+
+            }
+
     }
 }
