@@ -17,7 +17,7 @@ Conviva is an analytics service. THEOplayer offers a integration plugin for this
 
 | Web SDK | Android SDK | iOS SDK | tvOS SDK| Android TV SDK | Chromecast SDK | Tizen | WebOS |
 | :-----: | :---------: | :-----: | :--: | :------------: | :------------: | :----: | :----: |
-|   Yes   |     No     |   No   | No  |      Yes       |      Unverified       |  Yes | Yes |
+|   Yes   |     No     |   No   | No  |      No       |      Unverified       |  Yes | Yes |
 
 ## Code example
 
