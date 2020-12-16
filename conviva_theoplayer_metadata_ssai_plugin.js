@@ -586,22 +586,14 @@ class NewConvivaIntegration {
             if (currentLinearAd) {
                 if (this._adStartSent) {
                     if (this._convivaAdAnalytics) {
-                        this._convivaAdAnalytics.reportAdMetric(
-                            Conviva.Constants.Playback.PLAYER_STATE,
-                            Conviva.Constants.PlayerState.PLAYING
-                        );
+                        this._convivaAdAnalytics.reportAdMetric(Conviva.Constants.Playback.PLAYER_STATE, Conviva.Constants.PlayerState.PLAYING);
                     }
                 } else {
                     if (!this._convivaAdAnalytics && this._convivaVideoAnalytics) {
-                        this._convivaAdAnalytics = Conviva.Analytics.buildAdAnalytics(
-                            this._convivaVideoAnalytics
-                        );
+                        this._convivaAdAnalytics = Conviva.Analytics.buildAdAnalytics(this._convivaVideoAnalytics);
                     }
                     if (this._convivaAdAnalytics) {
-                        const adYospaceMetadata = collectYospaceAdMetadata(
-                            this._player,
-                            currentLinearAd
-                        );
+                        const adYospaceMetadata = collectYospaceAdMetadata(this._player,currentLinearAd);
                         this._convivaAdAnalytics.setAdInfo(adYospaceMetadata);
                         this._convivaAdAnalytics.reportAdStarted();
                         this._adStartSent = true;
