@@ -120,16 +120,16 @@ function updateCollectedContentMetdata(configuredContentMetadata) {
     return Object.assign(configuredContentMetadata);
 }
 
-function collectAdMetadata(player,ad) {
+function collectAdMetadata(player, ad) {
     let CurrentAdBreak = player.ads.currentAdBreak || undefined;
     let CurrentAdBreakTimeOffset = CurrentAdBreak.timeOffset;
     let CurrentAdBreakPosition;
     if (CurrentAdBreakTimeOffset === 0) {
-    CurrentAdBreakPosition = Conviva.Constants.AdPosition.PREROLL;
+        CurrentAdBreakPosition = Conviva.Constants.AdPosition.PREROLL;
     } else if (CurrentAdBreakTimeOffset < 0) {
-    CurrentAdBreakPosition = Conviva.Constants.AdPosition.POSTROLL;
+        CurrentAdBreakPosition = Conviva.Constants.AdPosition.POSTROLL;
     } else {
-    CurrentAdBreakPosition = Conviva.Constants.AdPosition.MIDROLL;
+        CurrentAdBreakPosition = Conviva.Constants.AdPosition.MIDROLL;
     }
     return {
         [Conviva.Constants.ASSET_NAME]: ad.title,
@@ -151,7 +151,7 @@ function collectAdMetadata(player,ad) {
     };
 }
 
-function collectYospaceAdMetadata(player,ad) {
+function collectYospaceAdMetadata(player, ad) {
     return {
         [Conviva.Constants.ASSET_NAME]: ad.advert.AdTitle,
         [Conviva.Constants.STREAM_URL]: player.yospace.session.masterURL._source,
@@ -252,7 +252,7 @@ class NewConvivaIntegration {
                 this._convivaVideoAnalytics.reportPlaybackMetric(Conviva.Constants.Playback.PLAYER_STATE, Conviva.Constants.PlayerState.PLAYING);
 
             }
-             
+
         };
         this._onPlayerPause = () => {
             if (!this._player) {
@@ -484,7 +484,7 @@ class NewConvivaIntegration {
 
                     }
                     if (this._convivaAdAnalytics) {
-                        const adMetadata = collectAdMetadata(this._player,currentLinearAd);
+                        const adMetadata = collectAdMetadata(this._player, currentLinearAd);
                         this._convivaAdAnalytics.setAdInfo(adMetadata);
                         this._convivaAdAnalytics.reportAdLoaded();
                         this._convivaAdAnalytics.reportAdStarted();
@@ -539,7 +539,7 @@ class NewConvivaIntegration {
 
             }
             if (this._convivaAdAnalytics) {
-                const adErrorInfo = 'Code:'+ event.errorCode + ': Message:' + event.message;
+                const adErrorInfo = 'Code:' + event.errorCode + ': Message:' + event.message;
                 this._convivaAdAnalytics.reportAdFailed(adErrorInfo || 'Ad Request Failed');
                 this._convivaAdAnalytics.release();
                 this._convivaAdAnalytics = undefined;
@@ -576,7 +576,7 @@ class NewConvivaIntegration {
                         this._convivaAdAnalytics = Conviva.Analytics.buildAdAnalytics(this._convivaVideoAnalytics);
                     }
                     if (this._convivaAdAnalytics) {
-                        const adYospaceMetadata = collectYospaceAdMetadata(this._player,currentLinearAd);
+                        const adYospaceMetadata = collectYospaceAdMetadata(this._player, currentLinearAd);
                         this._convivaAdAnalytics.setAdInfo(adYospaceMetadata);
                         this._convivaAdAnalytics.reportAdStarted();
                         this._adStartSent = true;
@@ -599,7 +599,7 @@ class NewConvivaIntegration {
             this._player.addEventListener('playing', this._onYospaceAdsPlayerPlaying);
             this._player.addEventListener('pause', this._onYospaceAdsPlayerPause);
         };
-         this._onYospaceAdsPlayerPlaying = () => {
+        this._onYospaceAdsPlayerPlaying = () => {
             if (!this._player || !this._player.yospace.session) {
                 return;
             }
@@ -614,7 +614,7 @@ class NewConvivaIntegration {
                         this._convivaAdAnalytics = Conviva.Analytics.buildAdAnalytics(this._convivaVideoAnalytics);
                     }
                     if (this._convivaAdAnalytics) {
-                        const adYospaceMetadata = collectYospaceAdMetadata(this._player,currentLinearAd);
+                        const adYospaceMetadata = collectYospaceAdMetadata(this._player, currentLinearAd);
                         this._convivaAdAnalytics.setAdInfo(adYospaceMetadata);
                         this._convivaAdAnalytics.reportAdStarted();
                         this._adStartSent = true;
@@ -634,7 +634,7 @@ class NewConvivaIntegration {
                     }
                 }
             }
-            
+
         };
         this._onYospaceAdsPlayerPause = () => {
             if (!this._player || !this._player.yospace.session) {
@@ -652,7 +652,7 @@ class NewConvivaIntegration {
             }
             const currentLinearAd = findYospaceCurrentLinearAd(this._player.yospace.session._currentBreak.adverts);
             if (currentLinearAd) {
-                return; 
+                return;
             }
             if (this._convivaAdAnalytics) {
                 this._convivaAdAnalytics.reportAdEnded();
@@ -662,7 +662,7 @@ class NewConvivaIntegration {
 
         };
         this._onYospaceAdBreakEnd = (event) => {
-             if (!this._player || !this._player.ads) {
+            if (!this._player || !this._player.ads) {
                 return;
             }
             if (this._convivaVideoAnalytics) {
@@ -670,7 +670,7 @@ class NewConvivaIntegration {
                     if (this._adBreakStartSent) {
                         this._convivaVideoAnalytics.reportAdBreakEnded();
                     }
-                }   
+                }
             }
             this._adBreakStartSent = false;
             this._isPlayingAd = false;
@@ -764,11 +764,11 @@ class NewConvivaIntegration {
         }
         this._convivaAdAnalytics = Conviva.Analytics.buildAdAnalytics(this._convivaVideoAnalytics);
         this._player.yospace.registerPlayer({
-        AdBreakStart: this._onYospaceAdBreakStart,
-        AdvertStart: this._onYospaceAdvertStart,
-        AdvertEnd: this._onYospaceAdvertEnd,
-        AdBreakEnd: this._onYospaceAdBreakEnd
-            })  
+            AdBreakStart: this._onYospaceAdBreakStart,
+            AdvertStart: this._onYospaceAdvertStart,
+            AdvertEnd: this._onYospaceAdvertEnd,
+            AdBreakEnd: this._onYospaceAdBreakEnd
+        })
     }
     destroy() {
         if (!this._player) {
@@ -793,7 +793,7 @@ class NewConvivaIntegration {
             if (this._player.network) {
                 this._player.network.removeEventListener('offline', this._reportManifestOffline);
             }
-        } catch (ignore) {}
+        } catch (ignore) { }
 
         if (this._player.ads) {
             this._player.ads.removeEventListener('aderror', this._onAdsError);
@@ -818,12 +818,12 @@ class NewConvivaIntegration {
         this._convivaAdAnalytics = undefined;
         this._currentAdBreak = undefined;
     }
-    updateContentMetdata(contentInfo){
+    updateContentMetdata(contentInfo) {
         if (!this._player) {
             return;
         }
         if (!this._isPlayingAd && this._convivaVideoAnalytics) {
             this._convivaVideoAnalytics.setContentInfo(updateCollectedContentMetdata(contentInfo));
-            }
+        }
     }
 }
