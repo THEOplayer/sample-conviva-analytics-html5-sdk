@@ -171,9 +171,9 @@ function collectAdMetadata(player, ad) {
         ['c3.ad.isSlate']: 'false',
         ['c3.ad.mediaFileApiFramework']: 'NA',
         ['c3.ad.adStitcher']: 'NA',
-        ['c3.ad.firstAdSystem']: ad.wrapperAdSystems[0],
-        ['c3.ad.firstAdId']: ad.wrapperAdIds[0],
-        ['c3.ad.firstCreativeId']: ad.wrapperCreativeIds[0],
+        ['c3.ad.firstAdSystem']: ad.wrapperAdSystems[0] || ad.adSystem,
+        ['c3.ad.firstAdId']: ad.wrapperAdIds[0] || ad.id,
+        ['c3.ad.firstCreativeId']: ad.wrapperCreativeIds[0] || ad.creativeId,
         ['c3.ad.creativeId']: ad.creativeId
     };
 }
@@ -438,6 +438,14 @@ class NewConvivaIntegration {
                         [Conviva.Constants.POD_DURATION]: currentAdBreak.maxDuration,
                         [Conviva.Constants.POD_INDEX]: currentAdBreakIndex
                     };
+                     if (!this._convivaAdAnalytics && this._convivaVideoAnalytics) {
+                        this._convivaAdAnalytics = Conviva.Analytics.buildAdAnalytics(this._convivaVideoAnalytics);
+                    }
+
+                    if (this._convivaAdAnalytics) {
+                        this._convivaAdAnalytics.reportAdLoaded();
+                        this._convivaAdAnalytics.reportAdMetric(Conviva.Constants.Playback.PLAYER_STATE, Conviva.Constants.PlayerState.BUFFERING);
+                    }
                     this._convivaVideoAnalytics.reportAdBreakStarted(Conviva.Constants.AdType.CLIENT_SIDE, Conviva.Constants.AdPlayer.CONTENT, convivaAdBreakInfo);
                     this._adBreakStartSent = true;
                 } else {
@@ -507,7 +515,6 @@ class NewConvivaIntegration {
                     if (this._convivaAdAnalytics) {
                         const adMetadata = collectAdMetadata(this._player, currentLinearAd);
                         this._convivaAdAnalytics.setAdInfo(adMetadata);
-                        this._convivaAdAnalytics.reportAdLoaded();
                         this._convivaAdAnalytics.reportAdStarted();
                         this._adStartSent = true;
                         this._convivaAdAnalytics.reportAdMetric(Conviva.Constants.Playback.PLAYER_STATE, Conviva.Constants.PlayerState.PLAYING);
